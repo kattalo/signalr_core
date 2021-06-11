@@ -228,8 +228,12 @@ class HubConnection {
     // Capture the start future before the connection might be restarted in an onclose callback.
     final startFuture = _startFuture;
 
-    _stopFuture = _stopInternal();
-    await _stopFuture;
+    try {
+      _stopFuture = _stopInternal();
+      await _stopFuture;
+    } catch (e) {
+      _logger!(LogLevel.debug, 'Call to _stopInternal() threw exception: $e');
+    }
 
     try {
       // Awaiting undefined continues immediately
@@ -352,10 +356,14 @@ class HubConnection {
     // The server hasn't talked to us in a while. It doesn't like us anymore ... :(
     // Terminate the connection, but we don't need to wait on the promise. This could trigger reconnecting.
     // tslint:disable-next-line:no-floating-promises
-    _connection!.stop(
-      exception: Exception(
-          'Server timeout elapsed without receiving a message from the server.'),
-    );
+    try {
+      _connection!.stop(
+        exception: Exception(
+            'Server timeout elapsed without receiving a message from the server.'),
+      );
+    } catch (e) {
+      _logger!(LogLevel.debug, '_serverTimeout() threw exception: $e');
+    }
   }
 
   void _completeClose({Exception? exception}) {
@@ -431,7 +439,8 @@ class HubConnection {
       });
       _reconnectDelayHandle = null;
 
-      if (_connectionState == null || _connectionState != HubConnectionState.reconnecting) {
+      if (_connectionState == null ||
+          _connectionState != HubConnectionState.reconnecting) {
         _logger!(LogLevel.debug,
             'Connection left the reconnecting state during reconnect delay. Done reconnecting.');
         return;
@@ -725,14 +734,18 @@ class HubConnection {
                     'Server returned an error on close: ' + closeMessage.error!)
                 : null;
 
-            if (closeMessage.allowReconnect == true) {
-              // It feels wrong not to await connection.stop() here, but processIncomingData is called as part of an onreceive callback which is not async,
-              // this is already the behavior for serverTimeout(), and HttpConnection.Stop() should catch and log all possible exceptions.
+            try {
+              if (closeMessage.allowReconnect == true) {
+                // It feels wrong not to await connection.stop() here, but processIncomingData is called as part of an onreceive callback which is not async,
+                // this is already the behavior for serverTimeout(), and HttpConnection.Stop() should catch and log all possible exceptions.
 
-              _connection!.stop(exception: exception);
-            } else {
-              // We cannot await stopInternal() here, but subsequent calls to stop() will await this if stopInternal() is still ongoing.
-              _stopFuture = _stopInternal(exception: exception);
+                _connection!.stop(exception: exception);
+              } else {
+                // We cannot await stopInternal() here, but subsequent calls to stop() will await this if stopInternal() is still ongoing.
+                _stopFuture = _stopInternal(exception: exception);
+              }
+            } catch (e) {
+              _logger!(LogLevel.debug, 'MessageType.close threw exception: $e');
             }
             break;
           default:

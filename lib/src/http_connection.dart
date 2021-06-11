@@ -187,6 +187,11 @@ class HttpConnection implements Connection {
 
   @override
   Future<void> stop({Exception? exception}) async {
+    _logging!(LogLevel.debug,
+        'HttpConnection.stop() called with exception: $exception');
+    _logging!(LogLevel.debug,
+        'HttpConnection.stop() called with stack trace: ${StackTrace.current}');
+
     if (_connectionState == ConnectionState.disconnected) {
       _logging!(LogLevel.debug,
           'Call to HttpConnection.stop(${exception.toString()}) ignored because the connection is already in the disconnected state.');
@@ -214,6 +219,7 @@ class HttpConnection implements Connection {
     // the transport closing and providing an exception and the exception from a close message
     // We would prefer the close message exception.
     _stopException = exception;
+    _logging!(LogLevel.debug, 'Setting stop exception to: $_stopException');
 
     try {
       await _startInternalFuture;
@@ -238,8 +244,7 @@ class HttpConnection implements Connection {
       try {
         await _transport!.stop();
       } catch (e) {
-        _logging!(LogLevel.error,
-            'transport = $_transport');
+        _logging!(LogLevel.error, 'transport = $_transport');
         _logging!(LogLevel.error,
             'HttpConnection.transport.stop() threw error \'${e.toString()}\'.');
         _stopConnection();
