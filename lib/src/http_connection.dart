@@ -239,6 +239,8 @@ class HttpConnection implements Connection {
         await _transport!.stop();
       } catch (e) {
         _logging!(LogLevel.error,
+            'transport = $_transport');
+        _logging!(LogLevel.error,
             'HttpConnection.transport.stop() threw error \'${e.toString()}\'.');
         _stopConnection();
       }
@@ -459,7 +461,11 @@ class HttpConnection implements Connection {
     if (_transport != null) {
       _transport!
         ..onreceive = onreceive
-        ..onclose = (e) => _stopConnection(exception: e);
+        ..onclose = (e) {
+          _logging!(
+              LogLevel.debug, 'Transport onclose called with exception: $e');
+          _stopConnection(exception: e);
+        };
       return _transport!.connect(url, transferFormat);
     } else {
       return Future.value();

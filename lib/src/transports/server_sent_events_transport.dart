@@ -74,17 +74,32 @@ class ServerSentEventsTransport implements Transport {
       return completer.completeError(e);
     }
 
-    _sseClient!.stream!.listen((data) {
+    try {
+      _sseClient!.stream!.listen((data) {
+        _log!(LogLevel.trace,
+            '(SSE transport) data received. ${getDataDetail(data, _logMessageContent)}');
+        try {
+          onreceive!(data);
+        } catch (e) {
+          _log!(
+              LogLevel.trace, '(SSE transport) onreceive threw an exception.');
+          if (opened) {
+            _close(exception: e as Exception);
+          } else if (e is Object) {
+            completer.completeError(e);
+          }
+        }
+      }, onError: (e) {
+        if (opened) {
+          _close(exception: e as Exception);
+        } else if (e is Object) {
+          completer.completeError(e);
+        }
+      });
+    } catch (e) {
       _log!(LogLevel.trace,
-          '(SSE transport) data received. ${getDataDetail(data, _logMessageContent)}');
-      onreceive!(data);
-    }, onError: (e) {
-      if (opened) {
-        _close(exception: e as Exception);
-      } else if (e is Object) {
-        completer.completeError(e);
-      }
-    });
+          '(SSE transport) sseClient!.stream!.listen threw an exception.');
+    }
 
     return completer.future;
   }
