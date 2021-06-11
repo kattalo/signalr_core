@@ -119,7 +119,7 @@ class HttpConnection implements Connection {
   HttpConnection({
     required String? url,
     required HttpConnectionOptions options,
-  })   : baseUrl = url,
+  })  : baseUrl = url,
         _client = (options.client != null)
             ? options.client
             : http.Client() as http.BaseClient,
@@ -277,7 +277,12 @@ class HttpConnection implements Connection {
     if (_connectionState == ConnectionState.disconnecting) {
       // A call to stop() induced this call to stopConnection and needs to be completed.
       // Any stop() awaiters will be scheduled to continue after the onclose callback fires.
-      _stopCompleter.complete();
+      try {
+        _stopCompleter.complete();
+      } catch (e) {
+        _logging!(LogLevel.debug,
+            'Exception catched and ignored while stopping connection. Exception = $e');
+      }
     }
 
     if (_exception != null) {
@@ -652,7 +657,10 @@ class TransportSendQueue {
 
   Future<void>? stop() {
     _executing = false;
-    _sendBufferedData.complete();
+    try {
+      _sendBufferedData.complete();
+      // ignore: empty_catches
+    } catch (e) {}
     return _sendLoopPromise;
   }
 
