@@ -36,6 +36,17 @@ enum HubConnectionState {
   reconnecting
 }
 
+class SignalRCoreException implements Exception {
+  final String message;
+
+  SignalRCoreException(this.message);
+
+  @override
+  String toString() {
+    return 'SignalRCoreException: $message';
+  }
+}
+
 /// Represents a connection to a SignalR Hub.
 class HubConnection {
   final dynamic _cachedPingMessage;
@@ -358,8 +369,8 @@ class HubConnection {
     // tslint:disable-next-line:no-floating-promises
     try {
       _connection!.stop(
-        exception: Exception(
-            'Server timeout elapsed without receiving a message from the server.'),
+        exception: SignalRCoreException(
+            'Server timeout elapsed without receiving a message from the server (websockets).'),
       );
     } catch (e) {
       _logger!(LogLevel.debug, '_serverTimeout() threw exception: $e');
