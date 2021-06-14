@@ -369,9 +369,9 @@ class HubConnection {
     // tslint:disable-next-line:no-floating-promises
     try {
       _connection!.stop(
-        exception: SignalRCoreException(
-            'Server timeout elapsed without receiving a message from the server (websockets).'),
-      );
+          // exception: SignalRCoreException(
+          //     'Server timeout elapsed without receiving a message from the server (websockets).'),
+          );
     } catch (e) {
       _logger!(LogLevel.debug, '_serverTimeout() threw exception: $e');
     }
