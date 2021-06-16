@@ -190,7 +190,7 @@ class HttpConnection implements Connection {
     _logging!(LogLevel.debug,
         'HttpConnection.stop() called with exception: $exception');
     _logging!(LogLevel.debug,
-        'HttpConnection.stop() called with stack trace: ${StackTrace.current}');
+        'HttpConnection runtime type is ${_client.runtimeType}');
 
     if (_connectionState == ConnectionState.disconnected) {
       _logging!(LogLevel.debug,
