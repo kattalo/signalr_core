@@ -229,7 +229,7 @@ class HubConnection {
 
       // HttpConnection.stop() should not complete until after the onclose callback is invoked.
       // This will transition the HubConnection to the disconnected state before HttpConnection.stop() completes.
-      await _connection!.stop(exception: e as Exception);
+      await _connection!.stop(exception: (e is Exception) ? e : Exception(e));
       rethrow;
     }
   }
@@ -976,7 +976,7 @@ class HubConnection {
           (_) => _sendWithProtocol(
             _createCompletionMessage(
               id: streamId.toString(),
-              exception: e as Exception,
+              exception: (e is Exception) ? e : Exception(e),
             ),
           ),
         );

@@ -140,7 +140,7 @@ class LongPollingTransport implements Transport {
               '(LongPolling transport) Poll timed out, reissuing.');
         } else {
           // Close the connection with the error as the result.
-          _closeError = e as Exception;
+          _closeError = (e is Exception) ? e : Exception(e);
           _running = false;
         }
       }

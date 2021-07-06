@@ -84,14 +84,14 @@ class ServerSentEventsTransport implements Transport {
           _log!(
               LogLevel.trace, '(SSE transport) onreceive threw an exception.');
           if (opened) {
-            _close(exception: e as Exception);
+            _close(exception: (e is Exception) ? e : Exception(e));
           } else if (e is Object) {
             completer.completeError(e);
           }
         }
       }, onError: (e) {
         if (opened) {
-          _close(exception: e as Exception);
+          _close(exception: (e is Exception) ? e : Exception(e));
         } else if (e is Object) {
           completer.completeError(e);
         }
